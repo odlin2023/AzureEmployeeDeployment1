@@ -228,38 +228,20 @@ public class TicketController {
 
 
 
-    @GetMapping("/employeeDashboard")
-    public String getDashboardInfo(Model model, HttpServletRequest request, Principal principal) {
-        NewEmployee newEmployee = null;
-        String name = null;
 
-        // Get the newEmployee from the session, if possible
-        HttpSession session = request.getSession();
-        if (session != null) {
-            newEmployee = (NewEmployee) session.getAttribute("newEmployee");
-            if (newEmployee != null) {
-                name = newEmployee.getName();
-            }
-        }
 
-        // If no session or no newEmployee in session, try getting newEmployee from Principal
-        if (newEmployee == null && principal != null) {
-            name = principal.getName();
-            newEmployee = newEmployeeRepository.findByUsername(name);
-        }
+     @GetMapping("/employeeDashboard/{employeeName}")
+    public String getEmployeeDashboard(@PathVariable String employeeName, Model model) {
+        // Fetch tickets for the employee
+        List<Ticket> tickets = ticketService.getTicketsByEmployeeName(employeeName);
 
-        if (newEmployee == null) {
-            // The user is not logged in. Redirect to login page.
-            return "redirect:/login";
-        }
-
-        List<Ticket> tickets = ticketRepository.findByNewEmployee_NameContaining(name);
-        model.addAttribute("newEmployee", newEmployee);
         model.addAttribute("tickets", tickets);
-        model.addAttribute("role", newEmployee.getRole());  // Add the role to the model
-        return "employeeDashboard";
+
+        return "employeeDashboard"; // Or any other view name you want to use
     }
 
+
+    
 
     @PostMapping("/login")
     public String loginSubmit(@ModelAttribute NewEmployee newEmployee, HttpServletRequest request, RedirectAttributes redirectAttributes) {
